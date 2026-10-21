@@ -6,6 +6,9 @@ const daretForm = document.getElementById("daret-form");
 const cotisation = document.getElementById("cotisation");
 const cotisationError = document.getElementById("cotisation-erreur");
 
+const selectPeriodicite = document.getElementById("periodicite");
+const periodiciteError = document.getElementById("periodicite-erreur");
+
 function errorPrix(prix) {
   const p = Number(prix);
   if (prix.trim() === "") return "Champ obligatoire";
@@ -26,11 +29,31 @@ function erreurCercle(cercle) {
   return null;
 }
 
+function errorPeriodicite(valure){
+  const valides = ["hebdomadaire", "quinzaine", "mensuelle"];
+  const o = valure.trim();
+  for (const v of valides){
+    if (o === v){
+      return null
+    }
+  }
+    return "Choisissez une périodicité valide"
+}
+
 daretForm.addEventListener("submit", (e)=> {
   e.preventDefault();
   validernom();
   validercotisation();
+  validerPeriodicite();
 });
+
+function validerPeriodicite(){
+  const message = errorPeriodicite(selectPeriodicite.value);
+  if (message){
+    return afficherErreur(selectPeriodicite,periodiciteError,message);
+  }
+  return effacerErreur(selectPeriodicite,periodiciteError);
+}
 
 function validercotisation(){
   const message = errorPrix(cotisation.value);
