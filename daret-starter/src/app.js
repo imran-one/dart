@@ -9,6 +9,18 @@ const cotisationError = document.getElementById("cotisation-erreur");
 const selectPeriodicite = document.getElementById("periodicite");
 const periodiciteError = document.getElementById("periodicite-erreur");
 
+const dateDebu = document.getElementById("date-debut");
+const dateErreur = document.getElementById("date-debut-erreur");
+
+function errordateDebu(datedebu){
+  const today = new Date().toISOString().split("T")[0];
+  if (datedebu === "") return "Champ obligatoire";
+  if (today <= datedebu){
+    return null
+  }
+  return "Choisissez une date valide (aujourd'hui ou plus tard)"
+}
+
 function errorPrix(prix) {
   const p = Number(prix);
   if (prix.trim() === "") return "Champ obligatoire";
@@ -40,12 +52,23 @@ function errorPeriodicite(valure){
     return "Choisissez une périodicité valide"
 }
 
+
+
 daretForm.addEventListener("submit", (e)=> {
   e.preventDefault();
   validernom();
   validercotisation();
   validerPeriodicite();
+  validerdate();
 });
+
+function validerdate(){
+    const message = errordateDebu(dateDebu.value);
+    if (message){
+      return afficherErreur(dateDebu,dateErreur,message);
+    }
+    return effacerErreur(dateDebu,dateErreur);
+}
 
 function validerPeriodicite(){
   const message = errorPeriodicite(selectPeriodicite.value);
