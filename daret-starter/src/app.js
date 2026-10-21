@@ -1,6 +1,8 @@
 const cercleNom = document.getElementById("nom-cercle");
 const cercleError = document.getElementById("nom-cercle-erreur");
+
 const daretForm = document.getElementById("daret-form");
+
 const cotisation = document.getElementById("cotisation");
 const cotisationError = document.getElementById("cotisation-erreur");
 
@@ -23,3 +25,41 @@ function erreurCercle(cercle) {
     return "Lettres, chiffres, espaces et tirets uniquement";
   return null;
 }
+
+daretForm.addEventListener("submit", (e)=> {
+  e.preventDefault();
+  validernom();
+  validercotisation();
+});
+
+function validercotisation(){
+  const message = errorPrix(cotisation.value);
+  if  (message){
+    return afficherErreur(cotisation,cotisationError,message);
+  }
+  return effacerErreur(cotisation,cotisationError);
+}
+
+function validernom(){
+  const message = erreurCercle(cercleNom.value);
+  if (message) {
+    return afficherErreur(cercleNom,cercleError,message);
+  } 
+  return effacerErreur(cercleNom,cercleError);
+}
+
+
+function afficherErreur(champ, zone, message) {
+  zone.textContent = message;
+  zone.classList.remove("hidden");
+  champ.setAttribute("aria-invalid", "true");
+  champ.setAttribute("aria-describedby", zone.id);
+}
+
+function effacerErreur(champ, zone) {
+  zone.textContent = "";
+  zone.classList.add("hidden");
+  champ.removeAttribute("aria-invalid");
+  champ.removeAttribute("aria-describedby");
+}
+
