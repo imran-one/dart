@@ -12,13 +12,13 @@ const periodiciteError = document.getElementById("periodicite-erreur");
 const dateDebu = document.getElementById("date-debut");
 const dateErreur = document.getElementById("date-debut-erreur");
 
-function errordateDebu(datedebu){
+function errordateDebu(datedebu) {
   const today = new Date().toISOString().split("T")[0];
   if (datedebu === "") return "Champ obligatoire";
-  if (today <= datedebu){
-    return null
+  if (today <= datedebu) {
+    return null;
   }
-  return "Choisissez une date valide (aujourd'hui ou plus tard)"
+  return "Choisissez une date valide (aujourd'hui ou plus tard)";
 }
 
 function errorPrix(prix) {
@@ -41,20 +41,18 @@ function erreurCercle(cercle) {
   return null;
 }
 
-function errorPeriodicite(valure){
+function errorPeriodicite(valure) {
   const valides = ["hebdomadaire", "quinzaine", "mensuelle"];
   const o = valure.trim();
-  for (const v of valides){
-    if (o === v){
-      return null
+  for (const v of valides) {
+    if (o === v) {
+      return null;
     }
   }
-    return "Choisissez une périodicité valide"
+  return "Choisissez une périodicité valide";
 }
 
-
-
-daretForm.addEventListener("submit", (e)=> {
+daretForm.addEventListener("submit", (e) => {
   e.preventDefault();
   validernom();
   validercotisation();
@@ -62,38 +60,37 @@ daretForm.addEventListener("submit", (e)=> {
   validerdate();
 });
 
-function validerdate(){
-    const message = errordateDebu(dateDebu.value);
-    if (message){
-      return afficherErreur(dateDebu,dateErreur,message);
-    }
-    return effacerErreur(dateDebu,dateErreur);
+function validerdate() {
+  const message = errordateDebu(dateDebu.value);
+  if (message) {
+    return afficherErreur(dateDebu, dateErreur, message);
+  }
+  return effacerErreur(dateDebu, dateErreur);
 }
 
-function validerPeriodicite(){
+function validerPeriodicite() {
   const message = errorPeriodicite(selectPeriodicite.value);
-  if (message){
-    return afficherErreur(selectPeriodicite,periodiciteError,message);
+  if (message) {
+    return afficherErreur(selectPeriodicite, periodiciteError, message);
   }
-  return effacerErreur(selectPeriodicite,periodiciteError);
+  return effacerErreur(selectPeriodicite, periodiciteError);
 }
 
-function validercotisation(){
+function validercotisation() {
   const message = errorPrix(cotisation.value);
-  if  (message){
-    return afficherErreur(cotisation,cotisationError,message);
+  if (message) {
+    return afficherErreur(cotisation, cotisationError, message);
   }
-  return effacerErreur(cotisation,cotisationError);
+  return effacerErreur(cotisation, cotisationError);
 }
 
-function validernom(){
+function validernom() {
   const message = erreurCercle(cercleNom.value);
   if (message) {
-    return afficherErreur(cercleNom,cercleError,message);
-  } 
-  return effacerErreur(cercleNom,cercleError);
+    return afficherErreur(cercleNom, cercleError, message);
+  }
+  return effacerErreur(cercleNom, cercleError);
 }
-
 
 function afficherErreur(champ, zone, message) {
   zone.textContent = message;
@@ -109,3 +106,62 @@ function effacerErreur(champ, zone) {
   champ.removeAttribute("aria-describedby");
 }
 
+const participantCompteur = document.getElementById("participants-compteur");
+const participantListe = document.getElementById("participants-liste");
+const ajouterParticipant = document.getElementById("ajouter-participant");
+const participantErreur = document.getElementById("participants-erreur");
+const min = Number(participantListe.dataset.min); // 2
+const max = Number(participantListe.dataset.max);
+let compteurId = 0;
+
+
+function mettreAJourCompteur() {
+const n = participantListe.children.length;
+  if (n <= 1) {
+    participantCompteur.textContent = `${n} participant`;
+  } else {
+    participantCompteur.textContent = `${n} participants`;
+  }
+}
+
+function creerParticipant() {
+  compteurId++;
+  const li = document.createElement("li");
+  li.innerHTML = `
+    <label for="prenom-${compteurId}">Prénom ${compteurId}</label>
+    <input id="prenom-${compteurId}" type="text" class="mt-1 w-full rounded border border-daret-bordure px-3 py-2" />
+    <p id="prenom-${compteurId}-erreur" class="hidden mt-1 text-sm font-medium text-daret-erreur"></p>
+    <button type="button" data-action="retirer" class="mt-3 rounded border border-daret-vert px-4 py-2">Retirer</button>
+  `;
+  participantListe.appendChild(li);
+  mettreAJourCompteur();
+}
+ajouterParticipant.addEventListener("click", () => {
+  const n = participantListe.children.length;
+  if (n >= max) {
+    participantErreur.textContent = `Maximum ${max} participants.`
+    participantErreur.classList.remove("hidden");
+  } else {
+    creerParticipant();
+    participantErreur.classList.add("hidden");
+  }
+  
+});
+
+participantListe.addEventListener("click", (e) => {
+  if (e.target.dataset.action !== "retirer") return;
+
+  const n = participantListe.children.length;
+  if (n<=min){
+    participantErreur.textContent= `Minimum ${min} participants.`
+    participantErreur.classList.remove("hidden");
+  }else {
+    e.target.closest("li").remove();
+    participantErreur.classList.add("hidden");
+  }
+  mettreAJourCompteur();
+});
+
+for (let i = 0; i < 3; i++) {
+  creerParticipant();
+}
