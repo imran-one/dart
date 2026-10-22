@@ -58,6 +58,7 @@ daretForm.addEventListener("submit", (e) => {
   validercotisation();
   validerPeriodicite();
   validerdate();
+  validerParticipants();
 });
 
 function validerdate() {
@@ -114,9 +115,8 @@ const min = Number(participantListe.dataset.min); // 2
 const max = Number(participantListe.dataset.max);
 let compteurId = 0;
 
-
 function mettreAJourCompteur() {
-const n = participantListe.children.length;
+  const n = participantListe.children.length;
   if (n <= 1) {
     participantCompteur.textContent = `${n} participant`;
   } else {
@@ -127,35 +127,56 @@ const n = participantListe.children.length;
 function creerParticipant() {
   compteurId++;
   const li = document.createElement("li");
-  li.innerHTML = `
+  /*li.innerHTML = `
     <label for="prenom-${compteurId}">Prénom ${compteurId}</label>
     <input id="prenom-${compteurId}" type="text" class="mt-1 w-full rounded border border-daret-bordure px-3 py-2" />
     <p id="prenom-${compteurId}-erreur" class="hidden mt-1 text-sm font-medium text-daret-erreur"></p>
     <button type="button" data-action="retirer" class="mt-3 rounded border border-daret-vert px-4 py-2">Retirer</button>
-  `;
+  `;*/
+  const label = document.createElement("label");
+  label.htmlFor = `prenom-${compteurId}`;
+  label.textContent = `participant ${compteurId}`;
+
+  const input = document.createElement("input");
+  input.id = `prenom-${compteurId}`;
+  input.type = "text";
+  input.className = "mt-1 w-full rounded border border-daret-bordure px-3 py-2";
+  input.placeholder = "prenom"
+
+  const p = document.createElement("p");
+  p.id = `prenom-${compteurId}-erreur`;
+  p.className = "hidden mt-1 text-sm font-medium text-daret-erreur";
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.dataset.action = "retirer";
+  button.className = "mt-3 rounded border border-daret-vert px-4 py-2";
+  button.textContent = "Retirer";
+
+  li.append(label,input,p,button);
+
   participantListe.appendChild(li);
   mettreAJourCompteur();
 }
 ajouterParticipant.addEventListener("click", () => {
   const n = participantListe.children.length;
   if (n >= max) {
-    participantErreur.textContent = `Maximum ${max} participants.`
+    participantErreur.textContent = `Maximum ${max} participants.`;
     participantErreur.classList.remove("hidden");
   } else {
     creerParticipant();
     participantErreur.classList.add("hidden");
   }
-  
 });
 
 participantListe.addEventListener("click", (e) => {
   if (e.target.dataset.action !== "retirer") return;
 
   const n = participantListe.children.length;
-  if (n<=min){
-    participantErreur.textContent= `Minimum ${min} participants.`
+  if (n <= min) {
+    participantErreur.textContent = `Minimum ${min} participants.`;
     participantErreur.classList.remove("hidden");
-  }else {
+  } else {
     e.target.closest("li").remove();
     participantErreur.classList.add("hidden");
   }
@@ -164,4 +185,36 @@ participantListe.addEventListener("click", (e) => {
 
 for (let i = 0; i < 3; i++) {
   creerParticipant();
+}
+
+function erreurPrenom(nom) {
+  const n = nom.trim();
+  if (n === "") return "Champ obligatoire";
+  if (n.length < 2) return "Au moins 2 caractères";
+  if (n.length > 30) return "Au plus 30 caractères";
+  if (!/^[- 'A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF]+$/.test(n))
+    return "Lettres, espaces, apostrophes et tirets uniquement";
+  return null;
+}
+
+function validerPrenom(input) {
+  const zone = document.getElementById(`${input.id}-erreur`);
+  const message = erreurPrenom(input.value);
+  if (message) {
+    return afficherErreur(input,zone,message);
+  }
+  return effacerErreur(input, zone);
+}
+
+participantListe.addEventListener("input" , (e) =>{
+  if (e.target.tagName === "INPUT"){
+    validerPrenom(e.target);
+  }
+});
+
+function validerParticipants() {
+  const inputs = participantListe.querySelectorAll("input");
+  for (const input of inputs) {
+    validerPrenom(input);
+  }
 }
