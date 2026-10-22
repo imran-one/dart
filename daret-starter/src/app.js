@@ -59,6 +59,15 @@ daretForm.addEventListener("submit", (e) => {
   validerPeriodicite();
   validerdate();
   validerParticipants();
+
+
+  const premierInvalide = daretForm.querySelector('[aria-invalid="true"]');
+  if (premierInvalide) {
+    document.querySelector('[aria-invalid="true"]').focus();
+    return;
+  }
+
+  console.log("Formulaire valide");
 });
 
 function validerdate() {
@@ -199,7 +208,7 @@ function erreurPrenom(nom) {
 
 function validerPrenom(input) {
   const zone = document.getElementById(`${input.id}-erreur`);
-  const message = erreurPrenom(input.value);
+  const message = erreurPrenom(input.value) || erreurDoublon(input);
   if (message) {
     return afficherErreur(input,zone,message);
   }
@@ -217,4 +226,17 @@ function validerParticipants() {
   for (const input of inputs) {
     validerPrenom(input);
   }
+}
+
+function erreurDoublon(input) {
+  const prenom = input.value.trim().toLowerCase();
+  if (prenom === "") return null;
+  const inputs = participantListe.querySelectorAll("input");
+  for (const autre of inputs) {
+    if (autre === input) break;
+    if (autre.value.trim().toLowerCase() === prenom) {
+      return "Ce prénom est déjà utilisé";
+    }
+  }
+  return null;
 }
