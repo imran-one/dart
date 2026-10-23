@@ -40,7 +40,7 @@ let compteurId = 0;
 // =====================================================
 
 function errordateDebu(datedebu) {
-  const today = new Date().toISOString().split("T")[0];
+  const today = aujourdhui();
   if (datedebu === "") return "Champ obligatoire";
   if (today <= datedebu) {
     return null;
@@ -84,8 +84,8 @@ function erreurPrenom(nom) {
   if (n === "") return "Champ obligatoire";
   if (n.length < 2) return "Au moins 2 caractères";
   if (n.length > 30) return "Au plus 30 caractères";
-  if (!/^[- 'A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF]+$/.test(n))
-    return "Lettres, espaces, apostrophes et tirets uniquement";
+  if (!/^[-'A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF]+$/.test(n))
+    return "Lettres, apostrophes et tirets uniquement";
   return null;
 }
 
@@ -94,6 +94,18 @@ function calculerResume(cotisation, nbParticipants) {
   const cagnotte = cotisation * nbParticipants;
   const totalCycle = cotisation * nbTours;
   return { cagnotte, totalCycle, nbTours };
+}
+
+function aujourdhui() {
+  const d = new Date();
+  const annee = d.getFullYear();
+  const mois = String(d.getMonth()+1).padStart(2,"0");
+  const jour = String(d.getDate()).padStart(2, "0");
+  return `${annee}-${mois}-${jour}`;
+}
+
+function formaterDate(date) {
+  return date.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
 }
 
 function calculerDates(dateDebut, periodicite, nbTours) {
@@ -250,8 +262,8 @@ function afficherResume(resume, dates) {
     `${resume.totalCycle} MAD`;
   document.getElementById("resume-nb-tours").textContent = `${resume.nbTours}`;
 
-  const premier = dates[0].toLocaleDateString("fr-FR");
-  const dernier = dates[dates.length - 1].toLocaleDateString("fr-FR");
+  const premier = formaterDate(dates[0]);
+  const dernier = formaterDate(dates[dates.length - 1]);
   document.getElementById("resume-dates").textContent =
     `${premier} · ${dernier}`;
 }
@@ -285,7 +297,7 @@ function creerLigne(numero, date, nom, montant) {
 
   const tdDate = document.createElement("td");
   tdDate.className = "px-4 py-3";
-  tdDate.textContent = date.toLocaleDateString("fr-FR");
+  tdDate.textContent = formaterDate(date);
 
   const tdNom = document.createElement("td");
   tdNom.className = "px-4 py-3";
@@ -352,6 +364,10 @@ daretForm.addEventListener("submit", (e) => {
   const montant = resume.cagnotte;
   afficherCalendrier(dates, noms, montant);
 });
+cercleNom.addEventListener("input", validernom);
+cotisation.addEventListener("input", validercotisation);
+selectPeriodicite.addEventListener("change", validerPeriodicite);
+dateDebu.addEventListener("change", validerdate);
 
 ajouterParticipant.addEventListener("click", () => {
   const n = participantListe.children.length;
