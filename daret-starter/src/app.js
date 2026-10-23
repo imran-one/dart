@@ -256,6 +256,8 @@ function afficherResume(resume, dates) {
     `${premier} · ${dernier}`;
 }
 
+// ----- Calendrier -----
+
 function lireParticipants() {
   const inputs = participantListe.querySelectorAll("input");
   const noms = [];
@@ -263,6 +265,61 @@ function lireParticipants() {
     noms.push(input.value.trim());
   }
   return noms;
+}
+
+function afficherCalendrier(dates, noms, montant) {
+  const corps = document.getElementById("calendrier-corps");
+  corps.replaceChildren();
+  for (let i = 0; i < dates.length; i++) {
+    corps.appendChild(creerLigne(i + 1, dates[i], noms[i], montant));
+  }
+}
+
+function creerLigne(numero, date, nom, montant) {
+  const tr = document.createElement("tr");
+  tr.dataset.tour = numero;
+
+  const tdNumero = document.createElement("td");
+  tdNumero.className = "px-4 py-3";
+  tdNumero.textContent = numero;
+
+  const tdDate = document.createElement("td");
+  tdDate.className = "px-4 py-3";
+  tdDate.textContent = date.toLocaleDateString("fr-FR");
+
+  const tdNom = document.createElement("td");
+  tdNom.className = "px-4 py-3";
+  tdNom.textContent = nom;
+
+  const tdMontant = document.createElement("td");
+  tdMontant.className = "px-4 py-3";
+  tdMontant.textContent = `${montant} MAD`;
+
+  const tdStatut = document.createElement("td");
+  tdStatut.className = "px-4 py-3";
+  tdStatut.textContent = "À venir";
+
+  const tdAction = document.createElement("td");
+  tdAction.className = "px-4 py-3";
+
+  const btnDetail = document.createElement("button");
+  btnDetail.type = "button";
+  btnDetail.className =
+    "mr-2 rounded border border-daret-vert px-3 py-1 text-sm";
+  btnDetail.dataset.action = "ouvrir-detail";
+  btnDetail.textContent = "Détail";
+
+  const btnStatut = document.createElement("button");
+  btnStatut.type = "button";
+  btnStatut.className =
+    "mr-2 rounded border border-daret-vert px-3 py-1 text-sm";
+  btnStatut.dataset.action = "basculer-statut";
+  btnStatut.textContent = "Statut";
+
+  tdAction.append(btnDetail, btnStatut);
+
+  tr.append(tdNumero, tdDate, tdNom, tdMontant, tdStatut, tdAction);
+  return tr;
 }
 
 // =====================================================
@@ -290,6 +347,10 @@ daretForm.addEventListener("submit", (e) => {
   afficherResume(resume, dates);
   etatVide.classList.add("hidden");
   contenuResultat.classList.remove("hidden");
+
+  const noms = lireParticipants();
+  const montant = resume.cagnotte;
+  afficherCalendrier(dates, noms, montant);
 });
 
 ajouterParticipant.addEventListener("click", () => {
