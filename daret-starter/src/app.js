@@ -256,6 +256,15 @@ function afficherResume(resume, dates) {
     `${premier} · ${dernier}`;
 }
 
+function lireParticipants() {
+  const inputs = participantListe.querySelectorAll("input");
+  const noms = [];
+  for (const input of inputs) {
+    noms.push(input.value.trim());
+  }
+  return noms;
+}
+
 // =====================================================
 // 5. LISTENERS
 // =====================================================
