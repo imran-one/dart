@@ -1,7 +1,12 @@
+// =====================================================
+// 1. SELECTORS
+// =====================================================
+
+// Formulaire
+const daretForm = document.getElementById("daret-form");
+
 const cercleNom = document.getElementById("nom-cercle");
 const cercleError = document.getElementById("nom-cercle-erreur");
-
-const daretForm = document.getElementById("daret-form");
 
 const cotisation = document.getElementById("cotisation");
 const cotisationError = document.getElementById("cotisation-erreur");
@@ -11,6 +16,28 @@ const periodiciteError = document.getElementById("periodicite-erreur");
 
 const dateDebu = document.getElementById("date-debut");
 const dateErreur = document.getElementById("date-debut-erreur");
+
+// Participants
+const participantCompteur = document.getElementById("participants-compteur");
+const participantListe = document.getElementById("participants-liste");
+const ajouterParticipant = document.getElementById("ajouter-participant");
+const participantErreur = document.getElementById("participants-erreur");
+
+// Résultat
+const etatVide = document.getElementById("etat-vide");
+const contenuResultat = document.getElementById("contenu-resultat");
+
+// =====================================================
+// 2. ÉTAT
+// =====================================================
+
+const min = Number(participantListe.dataset.min); // 2
+const max = Number(participantListe.dataset.max); // 20
+let compteurId = 0;
+
+// =====================================================
+// 3. FONCTIONS PURES (données -> résultat, pas de DOM)
+// =====================================================
 
 function errordateDebu(datedebu) {
   const today = new Date().toISOString().split("T")[0];
@@ -52,154 +79,6 @@ function errorPeriodicite(valure) {
   return "Choisissez une périodicité valide";
 }
 
-daretForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  validernom();
-  validercotisation();
-  validerPeriodicite();
-  validerdate();
-  validerParticipants();
-
-  const premierInvalide = daretForm.querySelector('[aria-invalid="true"]');
-  if (premierInvalide) {
-    document.querySelector('[aria-invalid="true"]').focus();
-    return;
-  }
-  const nb = participantListe.children.length;
-  const resume = calculerResume(Number(cotisation.value), nb);
-  const dates = calculerDates(dateDebu.value, selectPeriodicite.value, nb);
-
-  afficherResume(resume, dates);
-  document.getElementById("etat-vide").classList.add("hidden");
-  document.getElementById("contenu-resultat").classList.remove("hidden");
-});
-
-function validerdate() {
-  const message = errordateDebu(dateDebu.value);
-  if (message) {
-    return afficherErreur(dateDebu, dateErreur, message);
-  }
-  return effacerErreur(dateDebu, dateErreur);
-}
-
-function validerPeriodicite() {
-  const message = errorPeriodicite(selectPeriodicite.value);
-  if (message) {
-    return afficherErreur(selectPeriodicite, periodiciteError, message);
-  }
-  return effacerErreur(selectPeriodicite, periodiciteError);
-}
-
-function validercotisation() {
-  const message = errorPrix(cotisation.value);
-  if (message) {
-    return afficherErreur(cotisation, cotisationError, message);
-  }
-  return effacerErreur(cotisation, cotisationError);
-}
-
-function validernom() {
-  const message = erreurCercle(cercleNom.value);
-  if (message) {
-    return afficherErreur(cercleNom, cercleError, message);
-  }
-  return effacerErreur(cercleNom, cercleError);
-}
-
-function afficherErreur(champ, zone, message) {
-  zone.textContent = message;
-  zone.classList.remove("hidden");
-  champ.setAttribute("aria-invalid", "true");
-  champ.setAttribute("aria-describedby", zone.id);
-}
-
-function effacerErreur(champ, zone) {
-  zone.textContent = "";
-  zone.classList.add("hidden");
-  champ.removeAttribute("aria-invalid");
-  champ.removeAttribute("aria-describedby");
-}
-
-const participantCompteur = document.getElementById("participants-compteur");
-const participantListe = document.getElementById("participants-liste");
-const ajouterParticipant = document.getElementById("ajouter-participant");
-const participantErreur = document.getElementById("participants-erreur");
-const min = Number(participantListe.dataset.min); // 2
-const max = Number(participantListe.dataset.max);
-let compteurId = 0;
-
-function mettreAJourCompteur() {
-  const n = participantListe.children.length;
-  if (n <= 1) {
-    participantCompteur.textContent = `${n} participant`;
-  } else {
-    participantCompteur.textContent = `${n} participants`;
-  }
-}
-
-function creerParticipant() {
-  compteurId++;
-  const li = document.createElement("li");
-  /*li.innerHTML = `
-    <label for="prenom-${compteurId}">Prénom ${compteurId}</label>
-    <input id="prenom-${compteurId}" type="text" class="mt-1 w-full rounded border border-daret-bordure px-3 py-2" />
-    <p id="prenom-${compteurId}-erreur" class="hidden mt-1 text-sm font-medium text-daret-erreur"></p>
-    <button type="button" data-action="retirer" class="mt-3 rounded border border-daret-vert px-4 py-2">Retirer</button>
-  `;*/
-  const label = document.createElement("label");
-  label.htmlFor = `prenom-${compteurId}`;
-  label.textContent = `participant ${compteurId}`;
-
-  const input = document.createElement("input");
-  input.id = `prenom-${compteurId}`;
-  input.type = "text";
-  input.className = "mt-1 w-full rounded border border-daret-bordure px-3 py-2";
-  input.placeholder = "prenom";
-
-  const p = document.createElement("p");
-  p.id = `prenom-${compteurId}-erreur`;
-  p.className = "hidden mt-1 text-sm font-medium text-daret-erreur";
-
-  const button = document.createElement("button");
-  button.type = "button";
-  button.dataset.action = "retirer";
-  button.className = "mt-3 rounded border border-daret-vert px-4 py-2";
-  button.textContent = "Retirer";
-
-  li.append(label, input, p, button);
-
-  participantListe.appendChild(li);
-  mettreAJourCompteur();
-}
-ajouterParticipant.addEventListener("click", () => {
-  const n = participantListe.children.length;
-  if (n >= max) {
-    participantErreur.textContent = `Maximum ${max} participants.`;
-    participantErreur.classList.remove("hidden");
-  } else {
-    creerParticipant();
-    participantErreur.classList.add("hidden");
-  }
-});
-
-participantListe.addEventListener("click", (e) => {
-  if (e.target.dataset.action !== "retirer") return;
-
-  const n = participantListe.children.length;
-  if (n <= min) {
-    participantErreur.textContent = `Minimum ${min} participants.`;
-    participantErreur.classList.remove("hidden");
-  } else {
-    e.target.closest("li").remove();
-    participantErreur.classList.add("hidden");
-  }
-  mettreAJourCompteur();
-});
-
-for (let i = 0; i < 3; i++) {
-  creerParticipant();
-}
-
 function erreurPrenom(nom) {
   const n = nom.trim();
   if (n === "") return "Champ obligatoire";
@@ -207,41 +86,6 @@ function erreurPrenom(nom) {
   if (n.length > 30) return "Au plus 30 caractères";
   if (!/^[- 'A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF]+$/.test(n))
     return "Lettres, espaces, apostrophes et tirets uniquement";
-  return null;
-}
-
-function validerPrenom(input) {
-  const zone = document.getElementById(`${input.id}-erreur`);
-  const message = erreurPrenom(input.value) || erreurDoublon(input);
-  if (message) {
-    return afficherErreur(input, zone, message);
-  }
-  return effacerErreur(input, zone);
-}
-
-participantListe.addEventListener("input", (e) => {
-  if (e.target.tagName === "INPUT") {
-    validerPrenom(e.target);
-  }
-});
-
-function validerParticipants() {
-  const inputs = participantListe.querySelectorAll("input");
-  for (const input of inputs) {
-    validerPrenom(input);
-  }
-}
-
-function erreurDoublon(input) {
-  const prenom = input.value.trim().toLowerCase();
-  if (prenom === "") return null;
-  const inputs = participantListe.querySelectorAll("input");
-  for (const autre of inputs) {
-    if (autre === input) break;
-    if (autre.value.trim().toLowerCase() === prenom) {
-      return "Ce prénom est déjà utilisé";
-    }
-  }
   return null;
 }
 
@@ -272,6 +116,133 @@ function calculerDates(dateDebut, periodicite, nbTours) {
   return dates;
 }
 
+// =====================================================
+// 4. FONCTIONS DOM
+// =====================================================
+
+// ----- Erreurs (affichage) -----
+
+function afficherErreur(champ, zone, message) {
+  zone.textContent = message;
+  zone.classList.remove("hidden");
+  champ.setAttribute("aria-invalid", "true");
+  champ.setAttribute("aria-describedby", zone.id);
+}
+
+function effacerErreur(champ, zone) {
+  zone.textContent = "";
+  zone.classList.add("hidden");
+  champ.removeAttribute("aria-invalid");
+  champ.removeAttribute("aria-describedby");
+}
+
+// ----- Validation des champs -----
+
+function validernom() {
+  const message = erreurCercle(cercleNom.value);
+  if (message) {
+    return afficherErreur(cercleNom, cercleError, message);
+  }
+  return effacerErreur(cercleNom, cercleError);
+}
+
+function validercotisation() {
+  const message = errorPrix(cotisation.value);
+  if (message) {
+    return afficherErreur(cotisation, cotisationError, message);
+  }
+  return effacerErreur(cotisation, cotisationError);
+}
+
+function validerPeriodicite() {
+  const message = errorPeriodicite(selectPeriodicite.value);
+  if (message) {
+    return afficherErreur(selectPeriodicite, periodiciteError, message);
+  }
+  return effacerErreur(selectPeriodicite, periodiciteError);
+}
+
+function validerdate() {
+  const message = errordateDebu(dateDebu.value);
+  if (message) {
+    return afficherErreur(dateDebu, dateErreur, message);
+  }
+  return effacerErreur(dateDebu, dateErreur);
+}
+
+// ----- Participants -----
+
+// lit le DOM (la liste des inputs), donc pas une fonction pure
+function erreurDoublon(input) {
+  const prenom = input.value.trim().toLowerCase();
+  if (prenom === "") return null;
+  const inputs = participantListe.querySelectorAll("input");
+  for (const autre of inputs) {
+    if (autre === input) break;
+    if (autre.value.trim().toLowerCase() === prenom) {
+      return "Ce prénom est déjà utilisé";
+    }
+  }
+  return null;
+}
+
+function validerPrenom(input) {
+  const zone = document.getElementById(`${input.id}-erreur`);
+  const message = erreurPrenom(input.value) || erreurDoublon(input);
+  if (message) {
+    return afficherErreur(input, zone, message);
+  }
+  return effacerErreur(input, zone);
+}
+
+function validerParticipants() {
+  const inputs = participantListe.querySelectorAll("input");
+  for (const input of inputs) {
+    validerPrenom(input);
+  }
+}
+
+function mettreAJourCompteur() {
+  const n = participantListe.children.length;
+  if (n <= 1) {
+    participantCompteur.textContent = `${n} participant`;
+  } else {
+    participantCompteur.textContent = `${n} participants`;
+  }
+}
+
+function creerParticipant() {
+  compteurId++;
+  const li = document.createElement("li");
+
+  const label = document.createElement("label");
+  label.htmlFor = `prenom-${compteurId}`;
+  label.textContent = `participant ${compteurId}`;
+
+  const input = document.createElement("input");
+  input.id = `prenom-${compteurId}`;
+  input.type = "text";
+  input.className = "mt-1 w-full rounded border border-daret-bordure px-3 py-2";
+  input.placeholder = "prenom";
+
+  const p = document.createElement("p");
+  p.id = `prenom-${compteurId}-erreur`;
+  p.className = "hidden mt-1 text-sm font-medium text-daret-erreur";
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.dataset.action = "retirer";
+  button.className = "mt-3 rounded border border-daret-vert px-4 py-2";
+  button.textContent = "Retirer";
+
+  li.append(label, input, p, button);
+
+  participantListe.appendChild(li);
+  mettreAJourCompteur();
+}
+
+// ----- Résultat -----
+
 function afficherResume(resume, dates) {
   document.getElementById("resume-cagnotte").textContent =
     `${resume.cagnotte} MAD`;
@@ -283,5 +254,71 @@ function afficherResume(resume, dates) {
   const dernier = dates[dates.length - 1].toLocaleDateString("fr-FR");
   document.getElementById("resume-dates").textContent =
     `${premier} · ${dernier}`;
+}
 
+// =====================================================
+// 5. LISTENERS
+// =====================================================
+
+daretForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  validernom();
+  validercotisation();
+  validerPeriodicite();
+  validerdate();
+  validerParticipants();
+
+  const premierInvalide = daretForm.querySelector('[aria-invalid="true"]');
+  if (premierInvalide) {
+    premierInvalide.focus();
+    return;
+  }
+
+  const nb = participantListe.children.length;
+  const resume = calculerResume(Number(cotisation.value), nb);
+  const dates = calculerDates(dateDebu.value, selectPeriodicite.value, nb);
+
+  afficherResume(resume, dates);
+  etatVide.classList.add("hidden");
+  contenuResultat.classList.remove("hidden");
+});
+
+ajouterParticipant.addEventListener("click", () => {
+  const n = participantListe.children.length;
+  if (n >= max) {
+    participantErreur.textContent = `Maximum ${max} participants.`;
+    participantErreur.classList.remove("hidden");
+  } else {
+    creerParticipant();
+    participantErreur.classList.add("hidden");
+  }
+});
+
+// délégation : un seul écouteur sur le conteneur
+participantListe.addEventListener("click", (e) => {
+  if (e.target.dataset.action !== "retirer") return;
+
+  const n = participantListe.children.length;
+  if (n <= min) {
+    participantErreur.textContent = `Minimum ${min} participants.`;
+    participantErreur.classList.remove("hidden");
+  } else {
+    e.target.closest("li").remove();
+    participantErreur.classList.add("hidden");
+  }
+  mettreAJourCompteur();
+});
+
+participantListe.addEventListener("input", (e) => {
+  if (e.target.tagName === "INPUT") {
+    validerPrenom(e.target);
+  }
+});
+
+// =====================================================
+// 6. INIT
+// =====================================================
+
+for (let i = 0; i < 3; i++) {
+  creerParticipant();
 }
