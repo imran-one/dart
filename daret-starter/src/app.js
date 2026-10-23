@@ -60,14 +60,18 @@ daretForm.addEventListener("submit", (e) => {
   validerdate();
   validerParticipants();
 
-
   const premierInvalide = daretForm.querySelector('[aria-invalid="true"]');
   if (premierInvalide) {
     document.querySelector('[aria-invalid="true"]').focus();
     return;
   }
+  const nb = participantListe.children.length;
+  const resume = calculerResume(Number(cotisation.value), nb);
+  const dates = calculerDates(dateDebu.value, selectPeriodicite.value, nb);
 
-  console.log("Formulaire valide");
+  afficherResume(resume, dates);
+  document.getElementById("etat-vide").classList.add("hidden");
+  document.getElementById("contenu-resultat").classList.remove("hidden");
 });
 
 function validerdate() {
@@ -150,7 +154,7 @@ function creerParticipant() {
   input.id = `prenom-${compteurId}`;
   input.type = "text";
   input.className = "mt-1 w-full rounded border border-daret-bordure px-3 py-2";
-  input.placeholder = "prenom"
+  input.placeholder = "prenom";
 
   const p = document.createElement("p");
   p.id = `prenom-${compteurId}-erreur`;
@@ -162,7 +166,7 @@ function creerParticipant() {
   button.className = "mt-3 rounded border border-daret-vert px-4 py-2";
   button.textContent = "Retirer";
 
-  li.append(label,input,p,button);
+  li.append(label, input, p, button);
 
   participantListe.appendChild(li);
   mettreAJourCompteur();
@@ -210,13 +214,13 @@ function validerPrenom(input) {
   const zone = document.getElementById(`${input.id}-erreur`);
   const message = erreurPrenom(input.value) || erreurDoublon(input);
   if (message) {
-    return afficherErreur(input,zone,message);
+    return afficherErreur(input, zone, message);
   }
   return effacerErreur(input, zone);
 }
 
-participantListe.addEventListener("input" , (e) =>{
-  if (e.target.tagName === "INPUT"){
+participantListe.addEventListener("input", (e) => {
+  if (e.target.tagName === "INPUT") {
     validerPrenom(e.target);
   }
 });
@@ -239,4 +243,45 @@ function erreurDoublon(input) {
     }
   }
   return null;
+}
+
+function calculerResume(cotisation, nbParticipants) {
+  const nbTours = nbParticipants;
+  const cagnotte = cotisation * nbParticipants;
+  const totalCycle = cotisation * nbTours;
+  return { cagnotte, totalCycle, nbTours };
+}
+
+function calculerDates(dateDebut, periodicite, nbTours) {
+  const [annee, mois, jour] = dateDebut.split("-").map(Number);
+  const dates = [];
+  for (let i = 0; i < nbTours; i++) {
+    let d = new Date(annee, mois - 1, jour);
+    if (periodicite === "hebdomadaire") {
+      d.setDate(d.getDate() + 7 * i);
+    } else if (periodicite === "quinzaine") {
+      d.setDate(d.getDate() + 15 * i);
+    } else {
+      const moisCible = mois - 1 + i;
+      const dernierJour = new Date(annee, moisCible + 1, 0).getDate();
+      const jourFinal = Math.min(jour, dernierJour);
+      d = new Date(annee, moisCible, jourFinal);
+    }
+    dates.push(d);
+  }
+  return dates;
+}
+
+function afficherResume(resume, dates) {
+  document.getElementById("resume-cagnotte").textContent =
+    `${resume.cagnotte} MAD`;
+  document.getElementById("resume-total-cycle").textContent =
+    `${resume.totalCycle} MAD`;
+  document.getElementById("resume-nb-tours").textContent = `${resume.nbTours}`;
+
+  const premier = dates[0].toLocaleDateString("fr-FR");
+  const dernier = dates[dates.length - 1].toLocaleDateString("fr-FR");
+  document.getElementById("resume-dates").textContent =
+    `${premier} · ${dernier}`;
+
 }
